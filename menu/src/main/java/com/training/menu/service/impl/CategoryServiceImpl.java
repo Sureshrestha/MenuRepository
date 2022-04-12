@@ -5,6 +5,7 @@ import com.training.menu.dto.CategoryEntity;
 import com.training.menu.models.Category;
 import com.training.menu.models.CreateCategoryRequest;
 import com.training.menu.models.MenuException;
+import com.training.menu.models.constants.Constants;
 import com.training.menu.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -41,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
 	}
 
 	@Override
-	public List<Category> listAllCategories(int pageSize, int pageNumber, String direction, String properties)
+	public List<Category> listAllCategories(int pageSize, int pageNumber, String sortOrder, String sortBy)
 			throws MenuException {
 		if (pageSize <= 0) {
 			throw new MenuException("Page Size cannot be less than or equal to zero", HttpStatus.BAD_REQUEST);
@@ -49,27 +50,29 @@ public class CategoryServiceImpl implements CategoryService {
 		if (pageNumber < 0) {
 			throw new MenuException("Page Number cannot be less than zero", HttpStatus.BAD_REQUEST);
 		}
-		if (!(direction.equalsIgnoreCase("Ascending") || direction.equalsIgnoreCase("ASC")
-				|| direction.equalsIgnoreCase("DESC") || direction.equalsIgnoreCase("descending")|| direction.isEmpty())) {
-			throw new MenuException("Direction can be either Ascending or Descending", HttpStatus.BAD_REQUEST);
-		}
-		if (!(properties.equals("categoryName") || properties.equals("categoryId")
-				|| properties.equals("categoryImageURL") || properties.isEmpty())) {
+//		if (!(sortOrder.toString().equalsIgnoreCase("ASC") 
+//				||sortOrder.toString().equalsIgnoreCase("DESC") || sortOrder.equals(null))) {
+//			throw new MenuException("Direction can be either empty, ASC or DESC", HttpStatus.BAD_REQUEST);
+//		}
+		
+		Constants.SORT_ORDER order = Constants.SORT_ORDER.of(sortOrder);
+		
+		if (!(sortBy.equals("categoryName") || sortBy.equals("categoryId")
+				|| sortBy.equals("categoryImageURL") || sortBy.isEmpty())) {
 			throw new MenuException("Could not find property.", HttpStatus.BAD_REQUEST);
 		}
 
 		Direction dir = Direction.ASC;
-		if (direction.equalsIgnoreCase("Ascending") || direction.equalsIgnoreCase("ASC") || direction.isEmpty()) {
-			dir.isAscending();
-		} else
-			dir.isDescending();
+		if (order.toString().equalsIgnoreCase("DESC")) {
+			dir = Direction.DESC;
+		} 
 
-		if(properties.isEmpty())
+		if(sortBy.isEmpty())
 		{
-			properties = "id";
+			sortBy = "id";
 		}
 		Page<CategoryEntity> categoryDTOS = categoryDAO
-				.findAll(PageRequest.of(pageNumber, pageSize, Sort.by(dir, properties)));
+				.findAll(PageRequest.of(pageNumber, pageSize, Sort.by(dir, sortBy)));
 		List<Category> categories = new ArrayList<>();
 		for (CategoryEntity categoryDTO : categoryDTOS.getContent()) {
 			categories.add(Category.builder().categoryName(categoryDTO.getCategoryName())
@@ -84,7 +87,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 		CategoryEntity categoryEntity = categoryDAO.findByCategoryId(categoryId);
 		if (categoryEntity != null) {
-			categoryDAO.delete(categoryDAO.findByCategoryId(categoryId));
+			categoryDAO.delete(categoryEntity);
 			return;
 		}
 		throw new MenuException("category Id is not found", HttpStatus.BAD_REQUEST);

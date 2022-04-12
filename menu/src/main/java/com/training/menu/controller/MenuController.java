@@ -3,9 +3,9 @@ package com.training.menu.controller;
 import com.training.menu.models.Category;
 import com.training.menu.models.CreateCategoryRequest;
 import com.training.menu.models.MenuException;
+import com.training.menu.models.constants.Constants;
 import com.training.menu.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,11 +37,15 @@ public class MenuController {
 
 	@GetMapping("/category")
 	public ResponseEntity<?> listAllCategories(@RequestHeader HttpHeaders headers, @RequestParam int pageSize,
-			@RequestParam int pageNumber, @RequestParam String direction, @RequestParam String properties) {
+			@RequestParam int pageNumber, @RequestParam String sortOrder, @RequestParam String sortBy) {
 		try {
-			return ResponseEntity.ok(categoryService.listAllCategories(pageSize, pageNumber, direction, properties));
+			return ResponseEntity.ok(categoryService.listAllCategories(pageSize, pageNumber, sortOrder, sortBy));
 		} catch (MenuException e) {
 			return ResponseEntity.ok(e.getMessage());
+		}
+		catch (IllegalArgumentException e)
+		{
+			return ResponseEntity.ok("Either ASC or DESC");
 		}
 	}
 
