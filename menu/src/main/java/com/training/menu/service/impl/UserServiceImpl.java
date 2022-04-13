@@ -44,7 +44,6 @@ public class UserServiceImpl implements UserService {
 				if (u.getEmail().equals(emailId))
 					return u;
 			}
-			System.out.println(i);
 		}
 	
 		throw new UserException("User cannot be found", HttpStatus.BAD_REQUEST);
