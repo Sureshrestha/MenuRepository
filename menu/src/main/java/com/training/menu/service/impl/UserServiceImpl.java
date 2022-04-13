@@ -19,31 +19,36 @@ import com.training.menu.service.UserService;
 public class UserServiceImpl implements UserService {
 
 	private RestTemplate restTemplate;
-	
-	private ObjectMapper objectMapper;	
+
+	private ObjectMapper objectMapper;
 
 	public UserServiceImpl(@Autowired RestTemplate restTemplate, @Autowired ObjectMapper objectMapper) {
 		this.restTemplate = restTemplate;
 		this.objectMapper = objectMapper;
 	}
 
-	public User findUserByEmail(String emailId) throws UserException, JsonMappingException, JsonProcessingException {
-		if(emailId.equals(""))
-		{
+	public User findUserByEmail(String emailId) throws UserException, JsonProcessingException {
+		if (emailId.equals("")) {
 			throw new UserException("Email ID cannot be empty", HttpStatus.BAD_REQUEST);
 		}
-		
+
 		String response = restTemplate.getForObject("https://reqres.in/api/users?page=2", String.class);
-		
+
 		UserResponse userResponse = objectMapper.readValue(response, UserResponse.class);
-		for(User u: userResponse.getData())
-		{
-			if(u.getEmail().equals(emailId))
-				return u;
+		for (int i = 1; i <= userResponse.getTotal_pages(); i++) {
+			String url = "https://reqres.in/api/users?page="+i;
+			response = restTemplate.getForObject(url, String.class);
+			userResponse = objectMapper.readValue(response, UserResponse.class);
+			
+			for (User u : userResponse.getData()) {
+				if (u.getEmail().equals(emailId))
+					return u;
+			}
+			System.out.println(i);
 		}
-		
-			throw new UserException("User cannot be found", HttpStatus.BAD_REQUEST);
-		
+	
+		throw new UserException("User cannot be found", HttpStatus.BAD_REQUEST);
+
 	}
 
 }

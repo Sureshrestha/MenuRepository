@@ -24,7 +24,7 @@ public class UserController {
 	}
 	
 	@GetMapping("/getUserByEmailId")
-	ResponseEntity<?> getUserEmail(@RequestParam String emailId)
+	ResponseEntity<?> getUserEmail(@RequestParam(defaultValue = "", required = false) String emailId)
 	{
 		try {
 		User user = userService.findUserByEmail(emailId);

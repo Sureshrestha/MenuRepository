@@ -22,7 +22,7 @@ public class Constants {
 		@JsonCreator
 		 public static SORT_ORDER of(String value) {
 		        if (null == value) {
-		            return null;
+		            return ASC;
 		        }
 
 		        for (SORT_ORDER item : SORT_ORDER.values()) {
